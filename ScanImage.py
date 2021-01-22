@@ -4,11 +4,6 @@ from queue import PriorityQueue
 from dataclasses import dataclass
 
 
-def neighbors(row: int, column: int, maze: np.ndarray) -> tuple[tuple[int]]:
-    yield maze[row+1][column], maze[row-1][column]
-    yield maze[row][column+1],  maze[row][column-1]
-
-
 @dataclass
 class state:
     EMPTY: int = 255
@@ -17,24 +12,25 @@ class state:
 
 
 class FindNodes:
-    def __init__(self, image: str, name: str = "maze"):
-        self.maze = cv2.imread(image)
-        if not self.maze:
+    def __init__(self, image: str, extension: str = ".png"):
+        self.maze = cv2.imread(image, 0)
+        if self.maze is None:
             raise ValueError("No picture supplied")
         self.rows, self.columns = self.maze.shape[:2]
-        self.name = name
+        self.name = image.split(extension)[0]
 
     def neighbors(self, row: int, column: int) -> tuple[tuple[int]]:
         yield self.maze[row+1][column], self.maze[row-1][column]
         yield self.maze[row][column+1],  self.maze[row][column-1]
 
     def find_nodes(self) -> PriorityQueue:
+        print(self.maze)
         nodes = PriorityQueue()
         nodes.put((0, 0, self.maze[0].tolist().index(state.EMPTY)))  # Start
         count = 1
         for row in range(1, self.rows-1):
             for column in range(1, self.columns-1):
-                (up, down), (left, right) = neighbors(row, column, self.maze)
+                (up, down), (left, right) = self.neighbors(row, column)
                 if (up or down) and (left or right) and self.maze[row][column] == state.EMPTY:
                     nodes.put((count, row, column))
                     count += 1
