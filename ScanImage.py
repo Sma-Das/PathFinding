@@ -13,11 +13,10 @@ class state:
 
 @dataclass
 class Node:
-    pos: tuple[int, int]
-    up: tuple[int, int] = None
-    down: tuple[int, int] = None
-    left: tuple[int, int] = None
-    right: tuple[int, int] = None
+    UP: tuple[int, int] = None
+    DOWN: tuple[int, int] = None
+    LEFT: tuple[int, int] = None
+    RIGHT: tuple[int, int] = None
 
 
 class FindNodes:
@@ -33,87 +32,70 @@ class FindNodes:
         yield self.maze[row][column+1],  self.maze[row][column-1]
 
     def find_nodes(self) -> PriorityQueue:
-        self.start = (0, 0, self.maze[0].tolist().index(state.EMPTY))
-        nodes = [self.start]
-        count = 1
+        self.start = (0, self.maze[0].tolist().index(state.EMPTY))
+        self.nodes = []
         for row in range(1, self.rows-1):
             for column in range(1, self.columns-1):
                 (up, down), (left, right) = self.neighbors(row, column)
                 if (up or down) and (left or right) and self.maze[row][column] == state.EMPTY:
-                    nodes.append((count, row, column))
-                    count += 1
-        self.end = (count, self.rows-1, self.maze[self.rows-1].tolist().index(state.EMPTY))
-        nodes.append(self.end)
-        return nodes
+                    self.nodes.append((row, column))
+        self.end = (self.rows-1, self.maze[self.rows-1].tolist().index(state.EMPTY))
+        self.nodes = [self.start, *self.nodes, self.end]
+        return self.nodes
 
-    def draw_nodes(self, nodes: list, write=False, show=False):
-        img_node = self.maze.copy()
-        for _, row, column in nodes:
-            img_node[row][column] = state.NODE_CLR
+    def draw_nodes(self, write=False, show=False):
+        self.img_node = self.maze.copy()
+        nodes = [self.start, *self.nodes, self.end]
+        for row, column in nodes:
+            self.img_node[row][column] = state.NODE_CLR
 
         if write:
-            cv2.imwrite(f"{self.name}_node.png", img_node)
-        if show is True:
-            cv2.imshow(f"{self.name}_node.png", img_node)
+            cv2.imwrite(f"{self.name}_node.png", self.img_node)
+        if show:
+            cv2.imshow(f"{self.name}_node.png", self.img_node)
             cv2.waitKey(0)
-        return img_node
 
-    def find_neighbours(self, node_row: int, node_col: int, img_node: np.ndarray) -> Node:
-        node = Node(pos=(node_row, node_col))
-        if (node_row, node_col) == self.start or (node_row, node_col) == self.end:
-            return
-        left, right = node_col, node_col
-        up, down = node_row, node_row
+    def find_neighbours(self, row, column):
 
-        while left or right:
-            if left == 0 or left is None:
-                pass
-            elif img_node[node_row][left-1] == state.EMPTY:
-                left -= 1
-            elif img_node[node_row][left-1] == state.NODE_CLR:
-                node.left = (node_row, left-1)
-                left = None
-            elif img_node[node_row][left-1] == state.WALL:
-                left = None
+        def search(line, pos, inc):
+            length = len(line) - 1
+            while True:
+                if pos+inc < 0 or pos+inc >= length:
+                    return
 
-            if right == self.columns-1 or right is None:
-                pass
-            elif img_node[node_row][right+1] == state.EMPTY:
-                right += 1
-            elif img_node[node_row][right+1] == state.NODE_CLR:
-                node.right = (node_row, right+1)
-                right = None
-            elif img_node[node_row][right+1] == state.WALL:
-                right = None
+                pos += inc
+                val = line[pos]
+                if val == state.EMPTY:
+                    continue
+                elif val == state.NODE_CLR:
+                    return pos
+                elif val == state.WALL:
+                    return
 
-        while up or down:
-            if up == 0 or up is None:
-                pass
-            elif img_node[up-1][node_col] == state.EMPTY:
-                up -= 1
-            elif img_node[up-1][node_col] == state.NODE_CLR:
-                node.up = (up-1, node_col)
-                up = None
-            elif img_node[up-1][node_col] == state.WALL:
-                up = None
+        r, c = self.img_node[row], self.img_node[:, column]
+        cardinals = [
+            (search(c, row, -1), column),  # Up
+            (search(c, row, 1), column),  # Down
+            (row, search(r, column, -1)),  # left
+            (row, search(r, column, 1)),  # right
+        ]
+        for i, var in enumerate(cardinals):
+            if var[0] is None or var[1] is None:
+                cardinals[i] = None
 
-            if down == self.rows-1 or down is None:
-                pass
-            elif img_node[down+1][node_col] == state.EMPTY:
-                down += 1
-            elif img_node[down+1][node_col] == state.NODE_CLR:
-                node.down = (down+1, node_col)
-                down = None
-            elif img_node[down+1][node_col] == state.WALL:
-                down = None
+        return Node(*cardinals)
 
-        return node
+    def group_neighbours(self) -> dict:
+        self.map = {(row, column): self.find_neighbours(row, column)
+                    for row, column in self.find_nodes}
+
+        return self.map
 
 
 if __name__ == '__main__':
     solver = FindNodes("Maze_Pictures/tiny.png")
     nodes = solver.find_nodes()
-    node_img = solver.draw_nodes(nodes, write=True)
-    _, row, column = nodes[17]
-    print(solver.find_neighbours(row, column, node_img))
-    # _, row, column = nodes[1]
+    node_img = solver.draw_nodes(write=True)
+    row, column = nodes[1]
+    print(solver.find_neighbours(0, 3))
+    print(solver.group_neighbors()[(0, 3)])
