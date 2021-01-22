@@ -1,0 +1,3 @@
+*.pyc
+.DS_Store
+Maze_Pictures/node_img.png
