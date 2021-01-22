@@ -17,7 +17,6 @@ def gScore(end, curr):
 
 if __name__ == '__main__':
 
-    # maze = sys.argv[1]
     solver = FindNodes("Maze_Pictures/tiny.png")
     nodes = solver.find_nodes()
     print(nodes.qsize())
