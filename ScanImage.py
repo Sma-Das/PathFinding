@@ -24,7 +24,6 @@ class FindNodes:
         yield self.maze[row][column+1],  self.maze[row][column-1]
 
     def find_nodes(self) -> PriorityQueue:
-        print(self.maze)
         nodes = PriorityQueue()
         nodes.put((0, 0, self.maze[0].tolist().index(state.EMPTY)))  # Start
         count = 1
