@@ -13,14 +13,16 @@ def neighbors(row: int, column: int, maze: np.ndarray) -> tuple[tuple[int]]:
 class state:
     EMPTY: int = 255
     WALL: int = 0
+    NODE_CLR: int = 127
 
 
 class FindNodes:
-    def __init__(self, image: str):
+    def __init__(self, image: str, name: str = "maze"):
         self.maze = cv2.imread(image)
         if not self.maze:
             raise ValueError("No picture supplied")
         self.rows, self.columns = self.maze.shape[:2]
+        self.name = name
 
     def neighbors(self, row: int, column: int) -> tuple[tuple[int]]:
         yield self.maze[row+1][column], self.maze[row-1][column]
@@ -38,3 +40,14 @@ class FindNodes:
                     count += 1
         nodes.put((count, self.rows-1, self.maze[self.rows-1].tolist().index(state.EMPTY)))  # End
         return nodes
+
+    def draw_nodes(self, nodes: PriorityQueue, write=False, show=False):
+        img_node = self.maze.copy()
+        while nodes.qsize():
+            _, row, column = nodes.get()
+            img_node[row][column] = state.NODE_CLR
+        if write is True:
+            cv2.imwrite(f"{self.name}_node.png", img_node)
+        if show is True:
+            cv2.imshow(f"{self.name}_node.png", img_node)
+            cv2.waitKey(0)
