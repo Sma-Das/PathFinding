@@ -88,7 +88,6 @@ class FindNodes:
     def group_neighbours(self) -> dict:
         self.map = {(row, column): self.find_neighbours(row, column)
                     for row, column in self.find_nodes()}
-
         return self.map
 
 
