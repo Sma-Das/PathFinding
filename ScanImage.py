@@ -13,10 +13,24 @@ class state:
 
 @dataclass
 class Node:
+    ''' cardinal postitions [row, column, distance] '''
     UP: tuple[int, int, int] = None
     DOWN: tuple[int, int, int] = None
     LEFT: tuple[int, int, int] = None
     RIGHT: tuple[int, int, int] = None
+
+    def __iter__(self):
+        yield from [
+            self.UP,
+            self.DOWN,
+            self.LEFT,
+            self.RIGHT,
+        ]
+
+    def __getitem__(self, pos):
+        for node in self.__iter__():
+            if node[:2] == pos:
+                return node
 
 
 class FindNodes:
@@ -28,22 +42,24 @@ class FindNodes:
         self.name = image.split(extension)[0]
 
     def neighbors(self, row: int, column: int) -> tuple[tuple[int]]:
-        yield self.maze[row+1][column], self.maze[row-1][column]
-        yield self.maze[row][column+1],  self.maze[row][column-1]
+        yield self.maze[row + 1][column], self.maze[row - 1][column]
+        yield self.maze[row][column + 1], self.maze[row][column - 1]
 
     def find_nodes(self) -> PriorityQueue:
         self.start = (0, self.maze[0].tolist().index(state.EMPTY))
         self.nodes = []
-        for row in range(1, self.rows-1):
-            for column in range(1, self.columns-1):
+        for row in range(1, self.rows - 1):
+            for column in range(1, self.columns - 1):
                 (up, down), (left, right) = self.neighbors(row, column)
                 if (up or down) and (left or right) and self.maze[row][column] == state.EMPTY:
                     self.nodes.append((row, column))
-        self.end = (self.rows-1, self.maze[self.rows-1].tolist().index(state.EMPTY))
+        self.end = (self.rows - 1, self.maze[self.rows - 1].tolist().index(state.EMPTY))
         self.nodes = [self.start, *self.nodes, self.end]
         return self.nodes
 
-    def draw_nodes(self, write=False, show=False):
+    def draw_nodes(self, write=False, show=False, make_nodes=False):
+        if not hasattr(self, "self.nodes") or make_nodes:
+            self.find_nodes()
         self.img_node = self.maze.copy()
         nodes = [self.start, *self.nodes, self.end]
         for row, column in nodes:
@@ -60,7 +76,7 @@ class FindNodes:
         def search(line, pos, inc):
             length = len(line) - 1
             while True:
-                if pos+inc < 0 or pos+inc >= length:
+                if pos + inc < 0 or pos + inc >= length:
                     return
                 pos += inc
                 val = line[pos]
@@ -73,10 +89,10 @@ class FindNodes:
 
         r, c = self.img_node[row], self.img_node[:, column]
         cardinals = [
-            (u := search(c, row, -1), column, abs(u-row) if u else None),  # Up
-            (d := search(c, row, 1), column, abs(d-row) if d else None),  # Down
-            (row, l := search(r, column, -1), abs(l-column) if l else None),  # left
-            (row, r := search(r, column, 1), abs(r-column) if r else None),  # right
+            (u := search(c, row, -1), column, abs(u - row) if u else None),  # Up
+            (d := search(c, row, 1), column, abs(d - row) if d else None),  # Down
+            (row, l := search(r, column, -1), abs(l - column) if l else None),  # left
+            (row, r := search(r, column, 1), abs(r - column) if r else None),  # right
         ]
 
         for i, var in enumerate(cardinals):
