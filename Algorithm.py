@@ -1,4 +1,5 @@
 from ScanImage import FindNodes
+from queue import PriorityQueue
 
 
 def fScore(start, curr):

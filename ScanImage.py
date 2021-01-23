@@ -13,10 +13,10 @@ class state:
 
 @dataclass
 class Node:
-    UP: tuple[int, int] = None
-    DOWN: tuple[int, int] = None
-    LEFT: tuple[int, int] = None
-    RIGHT: tuple[int, int] = None
+    UP: tuple[int, int, int] = None
+    DOWN: tuple[int, int, int] = None
+    LEFT: tuple[int, int, int] = None
+    RIGHT: tuple[int, int, int] = None
 
 
 class FindNodes:
@@ -62,7 +62,6 @@ class FindNodes:
             while True:
                 if pos+inc < 0 or pos+inc >= length:
                     return
-
                 pos += inc
                 val = line[pos]
                 if val == state.EMPTY:
@@ -74,11 +73,12 @@ class FindNodes:
 
         r, c = self.img_node[row], self.img_node[:, column]
         cardinals = [
-            (search(c, row, -1), column),  # Up
-            (search(c, row, 1), column),  # Down
-            (row, search(r, column, -1)),  # left
-            (row, search(r, column, 1)),  # right
+            (u := search(c, row, -1), column, abs(u-row) if u else None),  # Up
+            (d := search(c, row, 1), column, abs(d-row) if d else None),  # Down
+            (row, l := search(r, column, -1), abs(l-column) if l else None),  # left
+            (row, r := search(r, column, 1), abs(r-column) if r else None),  # right
         ]
+
         for i, var in enumerate(cardinals):
             if var[0] is None or var[1] is None:
                 cardinals[i] = None
@@ -87,7 +87,7 @@ class FindNodes:
 
     def group_neighbours(self) -> dict:
         self.map = {(row, column): self.find_neighbours(row, column)
-                    for row, column in self.find_nodes}
+                    for row, column in self.find_nodes()}
 
         return self.map
 
@@ -98,4 +98,4 @@ if __name__ == '__main__':
     node_img = solver.draw_nodes(write=True)
     row, column = nodes[1]
     print(solver.find_neighbours(0, 3))
-    print(solver.group_neighbors()[(0, 3)])
+    print(solver.group_neighbours())
