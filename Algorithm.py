@@ -4,24 +4,20 @@ from math import hypot
 from collections import deque
 
 
-def fScore(start, curr):
-    ''' score from the start to curr node '''
-    s_row, s_col = start
-    c_row, c_col = curr
-    return (c_row - s_row) + (c_col - s_col)
+class func:
+    pass
 
 
-def gScore(end, curr):
-    ''' score from end to curr node '''
-    e_row, e_col = end
-    c_row, c_col = curr
-    return (c_row - e_row) + (c_col - e_col)
+def score_move(start: tuple[int, int], end: tuple[int, int]) -> int:
+    s_row, s_column = start
+    e_row, e_column = end
+    return abs(s_row-e_row + s_column-e_column)
 
 
-def heuristic(start, end):
-    s_row, s_column, _ = start
-    e_row, e_column, _ = end
-    return hypot(s_row - e_row, s_column - e_column)
+def heuristic(curr: tuple[int, int], end: tuple[int, int]) -> float:
+    c_row, c_column = curr
+    e_row, e_column = end
+    return round(hypot(c_row - e_row, c_column - e_column), 2)
 
 
 def reconstruct_path(current, came_from: dict):
@@ -32,25 +28,50 @@ def reconstruct_path(current, came_from: dict):
     return total_path
 
 
-def A_Star(start, end, h, nodes):
+def A_Star(NodeClass: FindNodes, heuristic: func):
+    # Node format: (row, column)
+    start, end = NodeClass.start, NodeClass.end
+    nodes = NodeClass.find_nodes()
+
     openSet = PriorityQueue()
-    openSet.put(start)
+    openSet.put((0, start))
     came_from = dict()
 
-    gScore = dict.fromkeys(nodes.keys(), float('inf'))
+    gScore = dict.fromkeys(nodes, float('inf'))  # Distance from start
     gScore[start] = 0
 
-    fScore = dict.fromkeys(nodes.keys(), float('inf'))
-    fScore[start] = h(start, end)
-
+    fScore = dict.fromkeys(nodes, float('inf'))  # Distance from end
+    fScore[start] = heuristic(start, end)
+    visited = []
     while not openSet.empty():
-        current = openSet.get()
+        _, (current) = openSet.get()
+        print(current)
         if current == end:
             return reconstruct_path(current, came_from)
+
+        for neighbour in NodeClass.find_neighbours(*current):
+            print(neighbour, "neighbour")
+            if not neighbour:
+                continue
+            temp_g_score = gScore[current] + score_move(neighbour, current)
+            if temp_g_score < gScore[neighbour]:
+                came_from[neighbour] = current
+                gScore[neighbour] = temp_g_score
+                fScore[neighbour] = gScore[neighbour] + heuristic(neighbour, end)
+
+                if neighbour not in visited:
+                    openSet.put((fScore[neighbour], neighbour))
+                    visited.append(neighbour)
+    print(visited, end, came_from)
+    return False
+
+    print(fScore)
+    print(gScore)
+    print(openSet.get(), end)
 
 
 if __name__ == '__main__':
 
-    solver = FindNodes("Maze_Pictures/tiny.png")
-    nodes = solver.find_nodes()
-    print(nodes.qsize())
+    maze = FindNodes("Maze_Pictures/medium.png")
+    nodes = maze.find_nodes()
+    print(A_Star(maze, heuristic))

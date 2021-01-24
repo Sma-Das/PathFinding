@@ -20,17 +20,10 @@ class Node:
     RIGHT: tuple[int, int, int] = None
 
     def __iter__(self):
-        yield from [
-            self.UP,
-            self.DOWN,
-            self.LEFT,
-            self.RIGHT,
-        ]
+        yield from [self.UP, self.DOWN, self.LEFT, self.RIGHT]
 
     def __getitem__(self, pos):
-        for node in self.__iter__():
-            if node[:2] == pos:
-                return node
+        return pos
 
 
 class FindNodes:
@@ -41,25 +34,26 @@ class FindNodes:
         self.rows, self.columns = self.maze.shape[:2]
         self.name = image.split(extension)[0]
 
-    def neighbors(self, row: int, column: int) -> tuple[tuple[int]]:
+        self.start = (0, self.maze[0].tolist().index(state.EMPTY))
+        self.end = (self.rows - 1, self.maze[self.rows - 1].tolist().index(state.EMPTY))
+
+    def neighbours(self, row: int, column: int) -> tuple[tuple[int]]:
         yield self.maze[row + 1][column], self.maze[row - 1][column]
         yield self.maze[row][column + 1], self.maze[row][column - 1]
 
-    def find_nodes(self) -> PriorityQueue:
-        self.start = (0, self.maze[0].tolist().index(state.EMPTY))
+    def find_nodes(self, draw=True) -> list:
         self.nodes = []
         for row in range(1, self.rows - 1):
             for column in range(1, self.columns - 1):
-                (up, down), (left, right) = self.neighbors(row, column)
+                (up, down), (left, right) = self.neighbours(row, column)
                 if (up or down) and (left or right) and self.maze[row][column] == state.EMPTY:
                     self.nodes.append((row, column))
-        self.end = (self.rows - 1, self.maze[self.rows - 1].tolist().index(state.EMPTY))
         self.nodes = [self.start, *self.nodes, self.end]
+        if draw:
+            self.draw_nodes()
         return self.nodes
 
     def draw_nodes(self, write=False, show=False, make_nodes=False):
-        if not hasattr(self, "self.nodes") or make_nodes:
-            self.find_nodes()
         self.img_node = self.maze.copy()
         nodes = [self.start, *self.nodes, self.end]
         for row, column in nodes:
@@ -72,11 +66,12 @@ class FindNodes:
             cv2.waitKey(0)
 
     def find_neighbours(self, row, column):
+        print(row, column, "find_neighbours")
 
         def search(line, pos, inc):
             length = len(line) - 1
             while True:
-                if pos + inc < 0 or pos + inc >= length:
+                if pos + inc < 0 or pos + inc > length:
                     return
                 pos += inc
                 val = line[pos]
@@ -89,22 +84,30 @@ class FindNodes:
 
         r, c = self.img_node[row], self.img_node[:, column]
         cardinals = [
-            (u := search(c, row, -1), column, abs(u - row) if u else None),  # Up
-            (d := search(c, row, 1), column, abs(d - row) if d else None),  # Down
-            (row, l := search(r, column, -1), abs(l - column) if l else None),  # left
-            (row, r := search(r, column, 1), abs(r - column) if r else None),  # right
+            (search(c, row, -1), column,),  # abs(u - row) if u else None),  # Up
+            (search(c, row, 1), column, ),  # abs(d - row) if d else None),  # Down
+            (row, search(r, column, -1),),  # abs(l - column) if l else None),  # left
+            (row, search(r, column, 1), ),  # abs(r - column) if r else None),  # right
         ]
 
         for i, var in enumerate(cardinals):
             if var[0] is None or var[1] is None:
                 cardinals[i] = None
+        # else:
+        # cardinals[i] = (abs(row - var[0] + column - var[1]), *cardinals[i])
 
-        return Node(*cardinals)
+        # return Node(*cardinals)
+        return cardinals
 
-    def group_neighbours(self) -> dict:
-        self.map = {(row, column): self.find_neighbours(row, column)
-                    for row, column in self.find_nodes()}
-        return self.map
+    def compile_neighbours(self):
+        return {pos: self.find_neighbours(*pos) for pos in self.find_nodes()}
+
+    @property
+    def length(self):
+        if not hasattr(self, "nodes"):
+            return
+        else:
+            return len(self.nodes)
 
 
 if __name__ == '__main__':
@@ -112,5 +115,7 @@ if __name__ == '__main__':
     nodes = solver.find_nodes()
     node_img = solver.draw_nodes(write=True)
     row, column = nodes[1]
-    print(solver.find_neighbours(0, 3))
-    print(solver.group_neighbours())
+    print(row, column)
+    print(solver.find_neighbours(8, 7))
+    # print(solver.compile_neighbours())
+    print(solver.length)
