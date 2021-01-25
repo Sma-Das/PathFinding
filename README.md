@@ -2,11 +2,11 @@
 
 ### <u>Current Working Algorithms:</u>
 
-- None
+- A*
 
 ### WIP:
 
-- A*
+- None
 
 ### Planned:
 
