@@ -10,21 +10,6 @@ class state:
     NODE_CLR: int = 127
 
 
-# @dataclass
-# class Node:
-#     ''' cardinal postitions [row, column, distance] '''
-#     UP: tuple[int, int, int] = None
-#     DOWN: tuple[int, int, int] = None
-#     LEFT: tuple[int, int, int] = None
-#     RIGHT: tuple[int, int, int] = None
-#
-#     def __iter__(self):
-#         yield from [self.UP, self.DOWN, self.LEFT, self.RIGHT]
-#
-#     def __getitem__(self, pos):
-#         return pos
-
-
 class FindNodes:
     def __init__(self, image: str, extension: str = ".png"):
         self.maze = cv2.imread(image, 0)
@@ -32,7 +17,7 @@ class FindNodes:
             raise ValueError("No picture supplied")
         self.rows, self.columns = self.maze.shape[:2]
         self.name = image.split(extension)[0]
-
+        self.name = "Solved/" + self.name.split("/")[-1]
         self.start = (0, self.maze[0].tolist().index(state.EMPTY))
         self.end = (self.rows - 1, self.maze[self.rows - 1].tolist().index(state.EMPTY))
 
@@ -61,6 +46,7 @@ class FindNodes:
         if write:
             cv2.imwrite(f"{self.name}_node.png", self.img_node)
         if show:
+            print("Press esc to exit")
             cv2.imshow(f"{self.name}_node.png", self.img_node)
             cv2.waitKey(0)
 
@@ -128,25 +114,8 @@ class FindNodes:
                 solved[pr][c] = color(count, path_length)
                 count += 1
             count -= 1
-        print(count)
         if write:
             cv2.imwrite(f"{self.name}_solved.png", solved)
         if show:
             cv2.imshow(f"{self.name}_solved.png", solved)
             cv2.waitKey(0)
-
-
-if __name__ == '__main__':
-    pass
-    # solver = FindNodes("Maze_Pictures/medium.png")
-    # nodes = solver.find_nodes()
-    # node_img = solver.draw_nodes(write=True)
-    # row, column = nodes[1]
-    # print(row, column)
-    # print(solver.find_neighbours(8, 7))
-    # # print(solver.compile_neighbours())
-    # print(solver.length)
-    # medium = deque([(0, 3), (1, 3), (1, 9), (3, 9), (9, 9), (9, 7), (9, 1), (11, 1), (11, 5), (13, 5), (13, 3), (15, 3), (15, 11), (13, 11), (13, 13), (11, 13), (11, 17), (13, 17), (13, 19), (13, 25), (9, 25), (9, 21), (7, 21), (5, 21), (5, 23), (3, 23), (3, 25), (5, 25), (5, 27), (7, 27), (7, 29), (9, 29), (9, 31), (5, 31), (5, 29), (3, 29), (3, 31), (1, 31), (1, 33), (3, 33), (3, 35), (3, 37), (5, 37), (5, 35), (7, 35), (7, 33), (9, 33), (9, 35), (11, 35), (11, 37), (13, 37), (15, 37), (15, 33), (21, 33), (21, 35), (19, 35), (19, 37), (21, 37), (21, 39), (23, 39), (23, 37),
-    #                 (25, 37), (27, 37), (27, 39), (35, 39), (35, 37), (37, 37), (39, 37), (39, 35), (35, 35), (35, 31), (37, 31), (37, 29), (35, 29), (35, 27), (33, 27), (31, 27), (31, 25), (29, 25), (29, 23), (27, 23), (23, 23), (23, 15), (29, 15), (29, 17), (33, 17), (33, 15), (33, 13), (35, 13), (35, 11), (33, 11), (33, 9), (31, 9), (29, 9), (29, 5), (29, 3), (31, 3), (33, 3), (35, 3), (39, 3), (39, 5), (37, 5), (37, 9), (39, 9), (39, 11), (39, 13), (39, 15), (39, 17), (35, 17), (35, 19), (33, 19), (33, 21), (35, 21), (35, 23), (39, 23), (39, 25), (39, 27), (39, 31), (40, 31)])
-    #
-    # solver.draw_solved(medium)

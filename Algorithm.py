@@ -76,8 +76,8 @@ def total_path(nodes):
 
 if __name__ == '__main__':
 
-    maze = FindNodes("Maze_Pictures/combo400.png")
+    maze = FindNodes("Maze_Pictures/computerphile.png")
     nodes = maze.find_nodes()
-    solved, gScore = A_Star(maze, heuristic)
+    solved = A_Star(maze, heuristic)
     total_path(solved)
     maze.draw_solved(solved, total_path(solved), show=False, write=True)
