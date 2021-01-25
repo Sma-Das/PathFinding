@@ -98,33 +98,52 @@ class AStar:
 
         fScore = dict.fromkeys(nodes, float('inf'))  # Distance from end
         fScore[start] = heuristic(start, end)
-        visited = deque([])
-        while not openSet.empty():
-            _, (current) = openSet.get()
-            if current == end:
-                total_time = round(time()-start_time, 2)
-                print(f"Maze solved! that took {total_time}s")
-                return self.reconstruct_path(current, came_from)
+        visited = set()
+        try:
+            while not openSet.empty():
+                _, (current) = openSet.get()
+                # print(current)
+                if current == end:
+                    total_time = round(time()-start_time, 2)
+                    print(f"Maze solved! that took {total_time}s")
+                    return self.reconstruct_path(current, came_from)
 
-            for neighbour in self.NodeClass.find_neighbours(*current):
-                if not neighbour:
-                    continue
-                temp_g_score = gScore[current] + self.distance(neighbour, current)
-                if temp_g_score < gScore[neighbour]:
-                    came_from[neighbour] = current
-                    gScore[neighbour] = temp_g_score
-                    fScore[neighbour] = gScore[neighbour] + heuristic(neighbour, end)
+                for neighbour in self.NodeClass.find_neighbours(*current):
+                    if not neighbour:
+                        continue
+                    temp_g_score = gScore[current] + self.distance(neighbour, current)
+                    if temp_g_score < gScore[neighbour]:
+                        came_from[neighbour] = current
+                        gScore[neighbour] = temp_g_score
+                        fScore[neighbour] = gScore[neighbour] + heuristic(neighbour, end)
 
-                    if neighbour not in visited:
-                        openSet.put((fScore[neighbour], neighbour))
-                        visited.append(neighbour)
+                        if neighbour not in visited:
+                            openSet.put((fScore[neighbour], neighbour))
+                            visited.add(neighbour)
+        except KeyboardInterrupt:
+            total_time = round(time()-start_time, 2)
+            print(f"Keyboard interupt at {total_time}s")
+            print("Visited:", visited)
+            quit()
 
+        total_time = round(time()-start_time, 2)
         print(f"Maze not solved, that took {total_time}s")
         return deque()
 
     def save_maze(self, solved: deque, show=False, write=False):
 
-        def total_path(nodes: deque):
+        def total_path(nodes: deque) -> int:
+            '''
+            Calculates the length of the path given
+                Args:
+                    solved: path of the nodes taken
+
+                Returns:
+                    total: The length of the path in units
+
+                Notes:
+                    Distance is calculated using the distance function
+            '''
             if not nodes or (length := len(nodes)) < 2:
                 return 0
             left, total = 0, 0
@@ -133,14 +152,18 @@ class AStar:
                 left += 1
             return total
 
-        self.NodeClass.draw_solved(solved, total_path(solved), show=show, write=write)
+        length = total_path(solved)
+        print(f"The path is {length} units long")
+        self.NodeClass.draw_solved(solved, length, show=show, write=write)
 
 
 def main(Solver):
-    if len((args := sys.argv)) < 2:
+    if len(sys.argv) != 2:
         raise FileNotFoundError("No picture supplied")
-    Solver = Solver(args[1])
+    Solver = Solver(sys.argv[1])
     solved = Solver.solve()
+    if not solved:
+        return
     show = input("Show pictures? (y/N): ").lower() == 'y'
     save = input("Save pictures? (y/N): ").lower() == 'y'
     Solver.save_maze(solved, show, save)
