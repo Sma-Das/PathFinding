@@ -42,15 +42,14 @@ def A_Star(NodeClass: FindNodes, heuristic: func):
 
     fScore = dict.fromkeys(nodes, float('inf'))  # Distance from end
     fScore[start] = heuristic(start, end)
-    visited = []
+    visited = deque([])
     while not openSet.empty():
         _, (current) = openSet.get()
-        print(current)
         if current == end:
-            return reconstruct_path(current, came_from)
+
+            return reconstruct_path(current, came_from), gScore
 
         for neighbour in NodeClass.find_neighbours(*current):
-            print(neighbour, "neighbour")
             if not neighbour:
                 continue
             temp_g_score = gScore[current] + score_move(neighbour, current)
@@ -62,16 +61,23 @@ def A_Star(NodeClass: FindNodes, heuristic: func):
                 if neighbour not in visited:
                     openSet.put((fScore[neighbour], neighbour))
                     visited.append(neighbour)
-    print(visited, end, came_from)
     return False
 
-    print(fScore)
-    print(gScore)
-    print(openSet.get(), end)
+
+def total_path(nodes):
+    if not nodes or (length := len(nodes)) < 2:
+        return 0
+    left, total = 0, 0
+    while left < length:
+        total += score_move(nodes[left-1], nodes[left])
+        left += 1
+    return total
 
 
 if __name__ == '__main__':
 
-    maze = FindNodes("Maze_Pictures/medium.png")
+    maze = FindNodes("Maze_Pictures/combo400.png")
     nodes = maze.find_nodes()
-    print(A_Star(maze, heuristic))
+    solved, gScore = A_Star(maze, heuristic)
+    total_path(solved)
+    maze.draw_solved(solved, total_path(solved), show=False, write=True)
