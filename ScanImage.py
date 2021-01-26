@@ -119,3 +119,9 @@ class FindNodes:
         if show:
             cv2.imshow(f"{self.name}_solved.png", solved)
             cv2.waitKey(0)
+
+
+if __name__ == '__main__':
+    node_finder = FindNodes("Maze_Pictures/medium.png")
+    node_finder.find_nodes()
+    node_finder.draw_nodes(write=True)
