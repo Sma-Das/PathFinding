@@ -123,7 +123,7 @@ class AStar:
         except KeyboardInterrupt:
             total_time = round(time()-start_time, 2)
             print(f"Keyboard interupt at {total_time}s")
-            print("Visited:", visited)
+            print("Visited:", len(visited), "nodes")
             quit()
 
         total_time = round(time()-start_time, 2)
