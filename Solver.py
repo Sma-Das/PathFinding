@@ -3,7 +3,7 @@ from queue import PriorityQueue
 from math import hypot
 from collections import deque
 from time import time
-import sys
+from sys import argv
 
 
 class func:
@@ -109,20 +109,18 @@ class AStar:
                     return self.reconstruct_path(current, came_from)
 
                 for neighbour in self.NodeClass.find_neighbours(*current):
-                    if not neighbour:
-                        continue
                     temp_g_score = gScore[current] + self.distance(neighbour, current)
                     if temp_g_score < gScore[neighbour]:
                         came_from[neighbour] = current
                         gScore[neighbour] = temp_g_score
-                        fScore[neighbour] = gScore[neighbour] + heuristic(neighbour, end)
+                        fScore[neighbour] = temp_g_score + heuristic(neighbour, end)
 
                         if neighbour not in visited:
                             openSet.put((fScore[neighbour], neighbour))
                             visited.add(neighbour)
         except KeyboardInterrupt:
             total_time = round(time()-start_time, 2)
-            print(f"Keyboard interupt at {total_time}s")
+            print(f"\nKeyboard interupt at {total_time}s")
             print("Visited:", len(visited), "nodes")
             quit()
 
@@ -158,9 +156,9 @@ class AStar:
 
 
 def main(Solver):
-    if len(sys.argv) != 2:
+    if len(argv) != 2:
         raise FileNotFoundError("No picture supplied")
-    Solver = Solver(sys.argv[1])
+    Solver = Solver(argv[1])
     solved = Solver.solve()
     if not solved:
         return
