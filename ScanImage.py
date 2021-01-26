@@ -1,6 +1,6 @@
 import cv2
 from dataclasses import dataclass
-from collections import deque
+from collections import deque, defaultdict
 
 
 @dataclass
@@ -27,16 +27,16 @@ class FindNodes:
             self.maze[row][column + 1], self.maze[row][column - 1]
 
     def find_nodes(self, draw=True) -> list:
-        self.nodes = deque([self.start])
+        self.nodes = set([self.start])
         for row in range(1, self.rows - 1):
             for column in range(1, self.columns - 1):
                 up, down, left, right = self.neighbours(row, column)
                 if (up or down) and (left or right) and self.maze[row][column] == state.EMPTY:
-                    self.nodes.append((row, column))
-        self.nodes.append(self.end)
+                    self.nodes.add((row, column))
+        self.nodes.add(self.end)
         if draw:
             self.draw_nodes()
-        return self.nodes
+        return self.trim_nodes()
 
     def draw_nodes(self, write=False, show=False, make_nodes=False):
         self.img_node = self.maze.copy()
@@ -91,6 +91,21 @@ class FindNodes:
         else:
             return len(self.nodes)
 
+    def trim_nodes(self, nodes=[]):
+        self.all_neighbours = defaultdict(set)
+        if not nodes:
+            nodes = self.nodes.copy()
+        for node in nodes:
+            if node == self.start or node == self.end:
+                continue
+            adjacent = self.find_neighbours(*node)
+            if len(adjacent) <= 1:
+                self.nodes.discard(node)
+                row, column = node
+                self.img_node[row][column] = state.EMPTY
+                return self.trim_nodes(self.nodes)
+        return self.nodes
+
     def draw_solved(self, nodes: deque, path_length: int = 200, show=False, write=False):
         if not nodes:
             # raise ValueError("No nodes supplied")
@@ -132,4 +147,5 @@ if __name__ == '__main__':
         node_finder = FindNodes(sys.argv[1])
     except IndexError:
         raise FileNotFoundError("No picture supplied")
-    node_finder.draw_nodes(write=True, make_nodes=True)
+    node_finder.find_nodes()
+    node_finder.trim_nodes()
