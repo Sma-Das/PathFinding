@@ -7,6 +7,7 @@ from sys import argv
 
 
 class func:
+    ''' no native function type '''
     pass
 
 
