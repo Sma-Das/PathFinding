@@ -7,7 +7,7 @@
 
   - This can reduce total working area by a significant amount
 
-  - 4k x 4k Mazes with multiple solutions can take under a minute to solve on basic hardware
+  - 4k x 4k (16 million pixels) Mazes with multiple solutions can take under a minute to solve on basic hardware
 
   - It is not optimised to work with multiple threads
 
