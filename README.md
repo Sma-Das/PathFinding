@@ -35,9 +35,12 @@
 #### Additional Solved mazes can be found in the solved folder
 
 - Notes:
-  - Node discovery is approx 75k/s (on an older laptop, yet to test on others)
+  - Larger mazes example
+  - 4 million pixel width
   - ![image](https://user-images.githubusercontent.com/20164942/106104985-ab138200-615c-11eb-8b06-2206b02d3802.png)
-  - Started at ~12.5k/s
+  - Trimmed to nearly 600k (~85% reduction) 
+  - Node discovery is approx 75k/s (on an older laptop, yet to test on others)
+  - Started at ~12.5k/s initally (500% increase)
 
 
 ## Additonal mazes:
