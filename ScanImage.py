@@ -18,19 +18,27 @@ class FindNodes:
         if self.maze is None:
             raise ValueError("No picture supplied")
         self.fast_maze = deque(map(deque, self.maze))
-        # print(self.fast_maze)
         self.rows, self.columns = self.maze.shape[:2]
         self.name = image.split(extension)[0]
         self.name = "Solved/" + self.name.split("/")[-1]
         self.start = (0, self.maze[0].tolist().index(state.EMPTY))
         self.end = (self.rows - 1, self.maze[self.rows - 1].tolist().index(state.EMPTY))
 
-    def neighbours(self, row: int, column: int) -> tuple[tuple[int]]:
+    def neighbours(self, row: int, column: int) -> tuple:
+        '''
+        determine the cardinal neighbours of a given position i.e.
+                            N
+                        W   +   E
+                            S
+        '''
         return \
             self.fast_maze[row + 1][column], self.fast_maze[row - 1][column], \
             self.fast_maze[row][column + 1], self.fast_maze[row][column - 1]
 
-    def find_nodes(self, draw=True) -> list:
+    def find_nodes(self, draw: bool = True) -> list:
+        '''
+        find the nodes of the given maze, it works off a pixel-to-pixel basis
+        '''
         self.nodes = deque([self.start, self.end])
         for row in range(1, self.rows - 1):
             for column in range(1, self.columns - 1):
@@ -41,7 +49,8 @@ class FindNodes:
             self.draw_nodes()
         return self.nodes
 
-    def draw_nodes(self, write=False, show=False, make_nodes=False):
+    def draw_nodes(self, write: bool = False, show: bool = False, make_nodes: bool = False):
+        ''' draw the found nodes on a new image with the option to show the picture '''
         self.img_node = self.maze.copy()
         for row, column in self.nodes:
             self.img_node[row][column] = state.NODE_CLR
@@ -55,7 +64,10 @@ class FindNodes:
 
     @lru_cache
     def find_neighbours(self, row: int, column):
-
+        '''
+        find the nodal neighbours of a given position,
+        unlike neighbours which finds immediate neigbours
+        '''
         def search(line, pos, inc):
             length = len(line) - 1
             while True:
@@ -76,22 +88,19 @@ class FindNodes:
             (search(c, row, 1), column, ),  # Down
             (row, search(r, column, -1),),  # left
             (row, search(r, column, 1), ),  # right
-        ])
-        # for i, var in enumerate(cardinals):
-        # if var[0] is None or var[1] is None:
-        # cardinals[i] = None
-
-        # return cardinals
+        ])  # OPTIMIZE: Not sure the best way to organise it properly
         return [var for var in cardinals if var[0] is not None and var[1] is not None]
 
     @property
     def length(self):
+        ''' amount of nodes '''
         if not hasattr(self, "nodes"):
             return 0
         else:
             return len(self.nodes)
 
     def draw_solved(self, nodes: deque, path_length: int = 100, show=False, write=False):
+        ''' draw the solved nodes on the grid and save it to the Solved folder '''
         if not nodes:
             raise ValueError("No nodes supplied")
         solved = cvtColor(self.maze, COLOR_GRAY2RGB)
