@@ -1,5 +1,16 @@
 # Pathfinding Algorithms with Mazes
 
+### An implementation of a visual path-finder using Python3.
+
+
+Notes:
+
+Mazes are simple parameters, where a pixel denotes path(white), or wall(black). Unconventional mazes or RGB mazes can be retrofitted by specifiying within the `state` class
+
+The start and end is considered to be the *first* open path on both the **top and bottom** of the maze respectively.
+
+Modify the color transition of the solver by editing the RGB transition value in the `ScanImage` class.
+
 ### <u>Current Working Algorithms:</u>
 
 - A* optimised
@@ -38,7 +49,7 @@
   - Larger mazes example
   - 4 million pixel width
   - ![image](https://user-images.githubusercontent.com/20164942/106104985-ab138200-615c-11eb-8b06-2206b02d3802.png)
-  - Trimmed to nearly 600k (~85% reduction) 
+  - Trimmed to nearly 600k (~85% reduction)
   - Node discovery is approx 75k/s (on an older laptop, yet to test on others)
   - Started at ~12.5k/s initally (500% increase)
 
