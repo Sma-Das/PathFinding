@@ -5,6 +5,20 @@ from collections import deque
 from functools import lru_cache
 
 
+def color(i, length):  # BGR
+    """
+    Pattern to color solved maze
+
+    In the format BGR
+
+    B := node_pos/path_length
+    Start colour := 255-B
+    End Color := B
+    0 <= B <= 255
+    """
+    return (B := 255*i//length, 0, 255-B)
+
+
 @dataclass
 class state:
     EMPTY: int = 255
@@ -105,8 +119,6 @@ class FindNodes:
             raise ValueError("No nodes supplied")
         solved = cvtColor(self.maze, COLOR_GRAY2RGB)
 
-        def color(i, length):  # BGR
-            return (B := 255*i//length, 0, 255-B)
         path_length += len(nodes)
         count = 0
         curr = nodes.popleft()
